@@ -81,6 +81,7 @@ source <(cmctl completion zsh)
 source <(mirrord completions zsh)
 #source <(/opt/homebrew/opt/asdf/libexec/completions zsh)
 source ~/.config/zsh/az.completion
+source <(databricks completion zsh)
 
 export GREP_OPTIONS='--color=always'
 export KUBE_EDITOR="/opt/homebrew/bin/nvim"
@@ -98,4 +99,28 @@ export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 export PATH=$PATH:~/bin
 
 
+if command -v yabai >/dev/null 2>&1; then
+  # If yabai responds, it's running
+  if ! yabai -m query --spaces >/dev/null 2>&1; then
+    # Prefer yabai's built-in service command
+    yabai --start-service >/dev/null 2>&1
+
+    # Fallback: try to bootstrap LaunchAgent directly (covers some edge cases)
+    if ! yabai -m query --spaces >/dev/null 2>&1; then
+      PLIST="$HOME/Library/LaunchAgents/com.koekeishiya.yabai.plist"
+      if [ -f "$PLIST" ]; then
+        launchctl bootstrap "gui/$(id -u)" "$PLIST" >/dev/null 2>&1
+      fi
+    fi
+  fi
+fi
+
 complete -o nospace -C /opt/homebrew/bin/terragrunt terragrunt
+
+. "$HOME/.local/bin/env"
+
+
+
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
